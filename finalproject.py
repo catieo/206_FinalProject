@@ -77,6 +77,10 @@ def get_reviews(business):
 
 reviews = get_reviews("wildberry-pancakes-and-cafe-chicago-2")
 
+#UP NEXT: 
+#loop for going through each restaurant and getting reviews for each of them 
+#create database - table for search results, table for reviews 
+#remember to do git commits by sunday!! 
 
 
 	
