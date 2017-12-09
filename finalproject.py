@@ -59,7 +59,7 @@ def search(term, location):
 		return CACHE_DICTION[full_search_term]
 
 results = search("brunch", "Chicago")
-results = search("brunch", "Detroit")
+results2 = search("brunch", "Detroit")
 
 #function to query the Reviews API by name of a business working with the caching pattern 
 def get_reviews(business):
@@ -75,11 +75,15 @@ def get_reviews(business):
 		fw.write(dumped_json_cache)
 		fw.close()
 		return CACHE_DICTION_2[business]
+ 
+#loop for going through each restaurant and getting reviews for each of them and adding them to the cache
+#Chicago
+for business in results["businesses"]: 
+	get_reviews(business["id"])
+#Detroit
+for business in results2["businesses"]:
+	get_reviews(business["id"])
 
-reviews = get_reviews("wildberry-pancakes-and-cafe-chicago-2")
-
-#UP NEXT: 
-#loop for going through each restaurant and getting reviews for each of them 
 #create database - table for search results, table for reviews 
 #remember to do git commits by sunday!! 
 
