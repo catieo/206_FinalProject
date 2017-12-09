@@ -76,14 +76,6 @@ def get_reviews(business):
 		fw.write(dumped_json_cache)
 		fw.close()
 		return CACHE_DICTION_2[business]
- 
-#loop for going through each restaurant and getting reviews for each of them and adding them to the cache
-#Chicago
-for business in results["businesses"]: 
-	get_reviews(business["id"])
-#Detroit
-for business in results2["businesses"]:
-	get_reviews(business["id"])
 
 #create database - table for search results, table for reviews 
 conn = sqlite3.connect("yelp.sqlite")
@@ -91,16 +83,32 @@ cur = conn.cursor()
 
 #Create Businesses table 
 cur.execute('DROP TABLE IF EXISTS Businesses')
-cur.execute('CREATE TABLE Businesses (bus_id TEXT, rating FLOAT, num_reviews INTEGER, price TEXT, latitude FLOAT, longitude FLOAT)')
+cur.execute('CREATE TABLE Businesses (bus TEXT, rating FLOAT, num_reviews INTEGER, price TEXT, latitude FLOAT, longitude FLOAT)')
+#Create Reviews table 
+#bus_id is a foreign key 
+cur.execute('DROP TABLE IF EXISTS Reviews')
+cur.execute('CREATE TABLE Reviews (id INTEGER PRIMARY KEY, bus_id TEXT, time_posted TIMESTAMP, ind_rating INTEGER, review_text TEXT, user_posted TEXT)')
 
-#for loop to insert data into table 
+#for loop to insert data into tables
 for business in results["businesses"]:
 	tup = business["id"], business["rating"], business["review_count"], business["price"], business["coordinates"]["latitude"], business["coordinates"]["longitude"]
-	cur.execute('INSERT INTO Businesses (bus_id, rating, num_reviews, price, latitude, longitude) VALUES (?, ?, ?, ?, ?, ?)', tup)
+	#inserts business into Businesses table 
+	cur.execute('INSERT INTO Businesses (bus, rating, num_reviews, price, latitude, longitude) VALUES (?, ?, ?, ?, ?, ?)', tup)
+	#queries Reviews API and then inserts reviews for each Business into Reviews table 
+	reviews = get_reviews(business["id"])
+	for review in reviews["reviews"]:
+		rtup = business["id"], review["time_created"], review["rating"], review["text"], review["user"]["name"]
+		cur.execute('INSERT INTO Reviews (bus_id, time_posted, ind_rating, review_text, user_posted) VALUES (?, ?, ?, ?, ?)', rtup)
 
 for business in results2["businesses"]:
+	#inserts business into BUsinesses table
 	tup = business["id"], business["rating"], business["review_count"], business["price"], business["coordinates"]["latitude"], business["coordinates"]["longitude"]
-	cur.execute('INSERT INTO Businesses (bus_id, rating, num_reviews, price, latitude, longitude) VALUES (?, ?, ?, ?, ?, ?)', tup)
+	cur.execute('INSERT INTO Businesses (bus, rating, num_reviews, price, latitude, longitude) VALUES (?, ?, ?, ?, ?, ?)', tup)
+	#queries Reviews API and then inserts reviews for each Business into Reviews table 
+	reviews = get_reviews(business["id"])
+	for review in reviews["reviews"]:
+		rtup = business["id"], review["time_created"], review["rating"], review["text"], review["user"]["name"]
+		cur.execute('INSERT INTO Reviews (bus_id, time_posted, ind_rating, review_text, user_posted) VALUES (?, ?, ?, ?, ?)', rtup)
 
 conn.commit()
 
