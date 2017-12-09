@@ -1,6 +1,7 @@
 import requests
 import json
 import yelp
+import sqlite3
 
 #secret values to authenticate to the Yelp Fusion API 
 client_id = yelp.client_id
@@ -85,7 +86,24 @@ for business in results2["businesses"]:
 	get_reviews(business["id"])
 
 #create database - table for search results, table for reviews 
-#remember to do git commits by sunday!! 
+conn = sqlite3.connect("yelp.sqlite")
+cur = conn.cursor() 
+
+#Create Businesses table 
+cur.execute('DROP TABLE IF EXISTS Businesses')
+cur.execute('CREATE TABLE Businesses (bus_id TEXT, rating FLOAT, num_reviews INTEGER, price TEXT, latitude FLOAT, longitude FLOAT)')
+
+#for loop to insert data into table 
+for business in results["businesses"]:
+	tup = business["id"], business["rating"], business["review_count"], business["price"], business["coordinates"]["latitude"], business["coordinates"]["longitude"]
+	cur.execute('INSERT INTO Businesses (bus_id, rating, num_reviews, price, latitude, longitude) VALUES (?, ?, ?, ?, ?, ?)', tup)
+
+for business in results2["businesses"]:
+	tup = business["id"], business["rating"], business["review_count"], business["price"], business["coordinates"]["latitude"], business["coordinates"]["longitude"]
+	cur.execute('INSERT INTO Businesses (bus_id, rating, num_reviews, price, latitude, longitude) VALUES (?, ?, ?, ?, ?, ?)', tup)
+
+conn.commit()
+
 
 
 	
