@@ -83,7 +83,7 @@ cur = conn.cursor()
 
 #Create Businesses table 
 cur.execute('DROP TABLE IF EXISTS Businesses')
-cur.execute('CREATE TABLE Businesses (bus TEXT, rating FLOAT, num_reviews INTEGER, price TEXT, latitude FLOAT, longitude FLOAT)')
+cur.execute('CREATE TABLE Businesses (id TEXT, rating FLOAT, num_reviews INTEGER, price TEXT, latitude FLOAT, longitude FLOAT)')
 #Create Reviews table 
 #bus_id is a foreign key 
 cur.execute('DROP TABLE IF EXISTS Reviews')
@@ -93,7 +93,7 @@ cur.execute('CREATE TABLE Reviews (id INTEGER PRIMARY KEY, bus_id TEXT, time_pos
 for business in results["businesses"]:
 	tup = business["id"], business["rating"], business["review_count"], business["price"], business["coordinates"]["latitude"], business["coordinates"]["longitude"]
 	#inserts business into Businesses table 
-	cur.execute('INSERT INTO Businesses (bus, rating, num_reviews, price, latitude, longitude) VALUES (?, ?, ?, ?, ?, ?)', tup)
+	cur.execute('INSERT INTO Businesses (id, rating, num_reviews, price, latitude, longitude) VALUES (?, ?, ?, ?, ?, ?)', tup)
 	#queries Reviews API and then inserts reviews for each Business into Reviews table 
 	reviews = get_reviews(business["id"])
 	for review in reviews["reviews"]:
@@ -103,14 +103,22 @@ for business in results["businesses"]:
 for business in results2["businesses"]:
 	#inserts business into BUsinesses table
 	tup = business["id"], business["rating"], business["review_count"], business["price"], business["coordinates"]["latitude"], business["coordinates"]["longitude"]
-	cur.execute('INSERT INTO Businesses (bus, rating, num_reviews, price, latitude, longitude) VALUES (?, ?, ?, ?, ?, ?)', tup)
+	cur.execute('INSERT INTO Businesses (id, rating, num_reviews, price, latitude, longitude) VALUES (?, ?, ?, ?, ?, ?)', tup)
 	#queries Reviews API and then inserts reviews for each Business into Reviews table 
 	reviews = get_reviews(business["id"])
 	for review in reviews["reviews"]:
 		rtup = business["id"], review["time_created"], review["rating"], review["text"], review["user"]["name"]
 		cur.execute('INSERT INTO Reviews (bus_id, time_posted, ind_rating, review_text, user_posted) VALUES (?, ?, ?, ?, ?)', rtup)
 
+#join Business and Review tables according to bus_id key 
+#save in a list of tuples for now, maybe make another table? 
+joined_data = []
+for row in cur.execute('SELECT * FROM Businesses JOIN Reviews ON Businesses.id = Reviews.bus_id'):
+	joined_data.append(row)
+print(joined_data[0], joined_data[1], joined_data[2], joined_data[3])
+
 conn.commit()
+cur.close()
 
 
 
