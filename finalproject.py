@@ -59,6 +59,7 @@ def search(term, location):
 		return CACHE_DICTION[full_search_term]
 
 results = search("brunch", "Chicago")
+results = search("brunch", "Detroit")
 
 #function to query the Reviews API by name of a business working with the caching pattern 
 def get_reviews(business):
